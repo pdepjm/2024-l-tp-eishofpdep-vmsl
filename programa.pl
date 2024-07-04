@@ -33,27 +33,24 @@ Saber si un jugador es experto en metales, que sucede cuando desarrolló las tec
 En los ejemplos, Ana y Beto son expertos en metales, pero Carola y Dimitri no.
 */
 expertoEnMetales(Jugador):-
-    unJugador(Jugador),
-    desarrolloTecnologia(Jugador,herreria),
-    desarrolloTecnologia(Jugador,forja),
+    condicionExperto(Jugador),
     desarrolloTecnologia(Jugador,fundicion).
 
 expertoEnMetales(Jugador):-
-    unJugador(Jugador),
-    desarrolloTecnologia(Jugador,herreria),
-    desarrolloTecnologia(Jugador,forja),
+    condicionExperto(Jugador),
     juegaCon(Jugador,romanos).
 
+condicionExperto(Jugador):-
+    desarrolloTecnologia(Jugador,herreria),
+    desarrolloTecnologia(Jugador,forja).
 % 3) 
 /*
 Saber si una civilización es popular, que se cumple cuando la eligen varios jugadores (más de uno).
 En los ejemplos, los romanos son una civilización popular, pero los incas no.
 */
-civilizacion(romanos).
-civilizacion(incas).
+
 
 civilizacionPopular(Civilizacion):-
-    civilizacion(Civilizacion),
     juegaCon(Jugador1,Civilizacion),
     juegaCon(Jugador2,Civilizacion),
     Jugador1 \= Jugador2.
@@ -86,5 +83,5 @@ civilizacionAlcanzoTecnologia(Civilizacion,Tecnologia):-
     desarrolloTecnologia(Jugador,Tecnologia).
 
 esLider(Civilizacion):-
-    civilizacion(Civilizacion),
-    forall(unaTecnologia(Tecnologia), civilizacionAlcanzoTecnologia(Civilizacion, Tecnologia)).
+    juegaCon(_,Civilizacion),
+    forall(civilizacionAlcanzoTecnologia(_, Tecnologia),civilizacionAlcanzoTecnologia(Civilizacion, Tecnologia)).
