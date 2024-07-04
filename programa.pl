@@ -84,4 +84,4 @@ civilizacionAlcanzoTecnologia(Civilizacion,Tecnologia):-
 
 esLider(Civilizacion):-
     juegaCon(_,Civilizacion),
-    forall(civilizacionAlcanzoTecnologia(_, Tecnologia),civilizacionAlcanzoTecnologia(Civilizacion, Tecnologia)).
+    forall(civilizacionAlcanzoTecnologia(Civilizacion2, Tecnologia),civilizacionAlcanzoTecnologia(Civilizacion, Tecnologia)).
