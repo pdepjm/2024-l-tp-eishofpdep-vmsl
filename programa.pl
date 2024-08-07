@@ -210,6 +210,43 @@ puedeDesarrollar(Jugador, Tecnologia):-
     findall(T, (unaTecnologia(T), dependenciaDirecta(Tecnologia, T)), Lista),
     forall((unaTecnologia(X), member(X, Lista)), desarrolloTecnologia(Jugador, X)).
 
+% Bonus
+% 11) a) 
+/*Encontrar un orden válido en el que puedan haberse desarrollado las tecnologías para que un jugador llegue a desarrollar todo lo que tiene. Se espera una relación de jugador con lista de tecnologías.
+Ejemplo: Un orden válido para Ana es: herreria, emplumado, forja, láminas. Otro orden válido sería herreria, forja, láminas, emplumado. Pero seguro que Ana no desarrolló primero la forja, porque antes necesitaría la herrería.
+Recordar que debe funcionar para cualquier árbol y no sólo para el de el ejemplo. Y recordar que debe ser completamente inversible.*/
+
+%encuentra todas las tecnologias que un jugador desarrolló y las recopila en una lista.
+tecnologiasDesarrolladas(Jugador,Tecnologias):-
+    findall(Tecnologia,desarrolloTecnologia(Jugador,Tecnologia),Tecnologias).
+
+%usando tecnologiasDesarrolladas obtiene la lista de todas las tecnologias desarrolladas del jugador y encuentra orden válido de desarrollo, se arma con construirOrden.
+ordenValido(Jugador,Orden):-
+    tecnologiasDesarrolladas(Jugador,Tecnologias),
+    construirOrden(Tecnologias, [], Orden).
+
+%caso base, si la lista está vacía el orden construido es el mismo que el orden Parcial acumulado.
+construirOrden([],Orden,Orden). 
+
+%caso en el que se puede agregar una tecnología a la lista Parcial. 
+construirOrden([Tecnologia | Restantes], LParcial, Orden):-
+    puedeAgregar(Tecnologia, LParcial),
+    construirOrden(Restantes, [Tecnologia|LParcial], Orden).
+
+%caso en el que no se puede agregar tecnología a la lista.
+construirOrden([Tecnologia|Restantes], LParcial, Orden) :-
+    not(puedeAgregar(Tecnologia, LParcial)),
+    construirOrden(Restantes, LParcial, Orden).
+
+puedeAgregar(Tecnologia, LLParcial) :-
+    forall(requiere(Tecnologia, Dependencia),
+    member(Dependencia, LLParcial)).
+
+% b) 
+% ¿Qué sucede cuando se consulta si existe un orden válido para Dimitri? ¿Por qué?
+/*Cuando se consulta si existe un orden válido para Dimitri la respuesta es "Orden = [laminas, emplumado, forja, herreria] ;
+ya que Dimitri ya desarrolló herrería.*/
+
 % 12)
 /*
 Dado un jugador defensor, encontrar el ejército que debo crear para ganarle a todo su ejército. El ejército atacante debe tener el 
