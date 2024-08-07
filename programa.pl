@@ -132,6 +132,9 @@ vidaPiquero(escudo, Nivel, Vida):-
     piquero(sinEscudo, Nivel, VidaSinEscudo),
     Vida is VidaSinEscudo * (1.1).
 
+vidaPiquero(sinEscudo, Nivel, VidaSinEscudo):-
+    piquero(sinEscudo, Nivel, VidaSinEscudo).
+
 % 8)
 /*Queremos saber si una unidad le gana a otra. Las unidades tienen una ventaja por tipo sobre otras. 
 Cualquier jinete le gana a cualquier campeón, cualquier campeón le gana a cualquier piquero 
@@ -206,4 +209,28 @@ puedeDesarrollar(Jugador, Tecnologia):-
     not(desarrolloTecnologia(Jugador, Tecnologia)),
     findall(T, (unaTecnologia(T), dependenciaDirecta(Tecnologia, T)), Lista),
     forall((unaTecnologia(X), member(X, Lista)), desarrolloTecnologia(Jugador, X)).
+
+% 12)
+/*
+Dado un jugador defensor, encontrar el ejército que debo crear para ganarle a todo su ejército. El ejército atacante debe tener el 
+mismo tamaño, y suponer que las batallas son uno contra uno, cada integrante atacante ataca a un integrante defensor.
+Ejemplo: Para ganarle al ejército de Carola (que es un piquero sin escudo de nivel 3 y uno con escudo de nivel 2) hacen falta dos 
+campeones de cualquier vida, o dos piqueros con escudo nivel 3, o campeón y un piquero con escudo nivel 3, etc.
+Recordar que debe ser completamente inversible.
+*/
+% ejercitoGanador(JugadorDefensor, EjercitoAtacante).
+ejercitoGanador(JugadorDefensor, EjercitoAtacante):-
+    unJugador(JugadorDefensor),
+    ejercitoDefensor(JugadorDefensor, EjercitoDefensor),
+    unidadGanadora(EjercitoDefensor, EjercitoAtacante).
+
+unidadGanadora([UnidadDef | RestoDef], [UnidadAtq | RestoAtq]):-
+    gana(UnidadAtq, UnidadDef),
+    unidadGanadora(RestoDef, RestoAtq).
+
+unidadGanadora([], []).
+    
+ejercitoDefensor(JugadorDefensor, EjercitoDefensor):-
+    findall(UnidadDefensora, (unidad(JugadorDefensor, Unidades), member(UnidadDefensora, Unidades)), EjercitoDefensor).
+    
 
