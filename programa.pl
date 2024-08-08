@@ -156,6 +156,11 @@ gana(Unidad1,Unidad2):-
     vidaUnidad(Unidad2,Vida2),
     Vida1 > Vida2.
 
+gana(piquero(Tipo1, Nivel1, Vida1), piquero(Tipo2, Nivel2, Vida2)):-
+    vidaUnidad(piquero(Tipo1, Nivel1, Vida1), Vida1),
+    vidaUnidad(piquero(Tipo2, Nivel2, Vida2), Vida2),
+    Vida1 > Vida2.
+
 % 9)
 /*Saber si un jugador puede sobrevivir a un asedio. Esto ocurre si tiene más piqueros con escudo que sin escudo.
 En los ejemplos, Beto es el único que puede sobrevivir a un asedio, pues tiene 1 piquero con escudo y 0 sin escudo.*/
@@ -221,9 +226,11 @@ tecnologiasDesarrolladas(Jugador,Tecnologias):-
     findall(Tecnologia,desarrolloTecnologia(Jugador,Tecnologia),Tecnologias).
 
 %usando tecnologiasDesarrolladas obtiene la lista de todas las tecnologias desarrolladas del jugador y encuentra orden válido de desarrollo, se arma con construirOrden.
-ordenValido(Jugador,Orden):-
+ordenValido(Jugador,Tecs):-
     tecnologiasDesarrolladas(Jugador,Tecnologias),
-    construirOrden(Tecnologias, [], Orden).
+    construirOrden(Tecnologias, [], Orden),
+    reverse(Tecs,Orden).
+    
 
 %caso base, si la lista está vacía el orden construido es el mismo que el orden Parcial acumulado.
 construirOrden([],Orden,Orden). 
