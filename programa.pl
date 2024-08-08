@@ -84,6 +84,7 @@ esLider(Civilizacion):-
 % 6)
 /*Modelar lo necesario para representar las distintas unidades de cada jugador de la forma más conveniente 
 para resolver los siguientes puntos. Incluir los siguientes ejemplos: */
+/*
 jinete(caballo, 90).
 jinete(camello, 80).
 
@@ -95,18 +96,24 @@ piquero(sinEscudo, 2, 65).
 piquero(sinEscudo, 3, 70).
 
 campeon(Vida).
+*/
 
 %Ana tiene un jinete a caballo, un piquero con escudo de nivel 1, y un piquero sin escudo de nivel 2.
-unidad(ana, [jinete(caballo, 90),piquero(escudo, 1, vidaPiquero(escudo, 1, Vida)),piquero(sinEscudo, 2, 65)]).
+unidad(ana, piquero(sinEscudo, 2)).
+unidad(ana, piquero(escudo, 1)).
+unidad(ana, jinete(caballo)).
 
 %Beto tiene un campeón de 100 de vida, otro de 80 de vida, un piquero con escudo nivel 1 y un jinete a camello.
-unidad(beto, [campeon(100), campeon(80), piquero(escudo, 1, Vida), jinete(camello, 80)]).
+unidad(beto, campeon(100)).
+unidad(beto, campeon(80)).
+unidad(beto, piquero(escudo, 1)).
+unidad(beto, jinete(camello)).
 
 %Carola tiene un piquero sin escudo de nivel 3 y uno con escudo de nivel 2.
-unidad(carola, [piquero(sinEscudo, 3, 70), piquero(escudo, 2, Vida)]).
+unidad(carola, piquero(escudo, 2)).
+unidad(carola, piquero(sinEscudo, 3)).
 
 %Dimitri no tiene unidades.
-unidad(dimitri, []).
 
 
 % 7)
@@ -116,24 +123,29 @@ Cada campeón tiene una vida distinta.
 Los piqueros sin escudo de nivel 1 tienen vida 50, los de nivel 2 tienen vida 65 y los de nivel 3 tienen 70 de vida.
 Los piqueros con escudo tienen 10% más de vida que los piqueros sin escudo.
 En los ejemplos, la unidad más “viva” de Ana es el jinete a caballo, pues tiene 90 de vida, y ninguno de sus dos piqueros tiene tanta vida.*/
-unidadConMasVida(Jugador, UnidadMax):-
-    unidad(Jugador, Unidades),
-    findall(Vida, (member(Unidad, Unidades), vidaUnidad(Unidad,Vida)), VidaUnidades),
-    max_member(VidaMax, VidaUnidades),
-    findall(Unidad, (member(Unidad, Unidades), vidaUnidad(Unidad, VidaMax)), UnidadMax).
+unidadConMasVida(Jugador, Unidad):-
+    unidad(Jugador, Unidad),
+    forall(unidad(Jugador, Unidades), not((vidaUnidad(Unidades, VidasUni), vidaUnidad(Unidad, Vida), VidasUni > Vida))).
 
+% vidaUnidad(Unidad, Vida).
 
-vidaUnidad(jinete(_, Vida), Vida).
+% Vida Jinetes
+vidaUnidad(jinete(camello), 80).
+vidaUnidad(jinete(caballo), 90).
+% Vida Campeones
 vidaUnidad(campeon(Vida), Vida).
-vidaUnidad(piquero(Escudo, Nivel, Vida), Vida):-
-    vidaPiquero(Escudo, Nivel, Vida).
-
-vidaPiquero(escudo, Nivel, Vida):-
-    piquero(sinEscudo, Nivel, VidaSinEscudo),
+% Vida Piqueros
+vidaUnidad(piquero(escudo, Nivel), Vida):-
+    vidaPiqueroConEscudo(piquero(escudo, Nivel), Vida).
+% Piqueros sin escudos
+vidaUnidad(piquero(sinEscudo, 1), 50).
+vidaUnidad(piquero(sinEscudo, 2), 65).
+vidaUnidad(piquero(sinEscudo, 3), 70).
+% Piqueros con escudo
+vidaPiqueroConEscudo(piquero(escudo, Nivel), Vida):-
+    vidaUnidad(piquero(sinEscudo, Nivel), VidaSinEscudo),
     Vida is VidaSinEscudo * (1.1).
 
-vidaPiquero(sinEscudo, Nivel, VidaSinEscudo):-
-    piquero(sinEscudo, Nivel, VidaSinEscudo).
 
 % 8)
 /*Queremos saber si una unidad le gana a otra. Las unidades tienen una ventaja por tipo sobre otras. 
@@ -142,25 +154,27 @@ y cualquier piquero le gana a cualquier jinete, pero los jinetes a camello le ga
 En caso de que no exista ventaja entre las unidades, se compara la vida (el de mayor vida gana). 
 Este punto no necesita ser inversible. Por ejemplo, un campeón con 95 de vida le gana a otro con 50, 
 pero un campeón con 100 de vida no le gana a un jinete a caballo.*/
-leGanaA(jinete(_, _), campeon(_)).
-leGanaA(campeon(_), piquero(_, _, _)).
-leGanaA(piquero(_, _, _), jinete(_, _)).
-leGanaA(jinete(camello, _), jinete(caballo, _)).
 
-gana(Unidad1,Unidad2):-
-    leGanaA(Unidad1,Unidad2). 
 
-gana(Unidad1,Unidad2):-
-    not(leGanaA(Unidad2, Unidad1)),
-    vidaUnidad(Unidad1,Vida1),
-    vidaUnidad(Unidad2,Vida2),
+leGana(jinete(_), campeon(_)).
+leGana(campeon(_), piquero(_, _)).
+leGana(piquero(_, _), jinete(_)).
+leGana(jinete(camello), jinete(caballo)).
+
+gana(Ganador, Perdedor):-
+    leGana(Ganador, Perdedor).
+
+gana(Ganador, Perdedor):-
+    vidaUnidad(Ganador, Vida1),
+    vidaUnidad(Perdedor, Vida2),
+    not(leGana(Perdedor, Ganador)),
     Vida1 > Vida2.
-
-gana(piquero(Tipo1, Nivel1, Vida1), piquero(Tipo2, Nivel2, Vida2)):-
-    vidaUnidad(piquero(Tipo1, Nivel1, Vida1), Vida1),
-    vidaUnidad(piquero(Tipo2, Nivel2, Vida2), Vida2),
+/*
+gana(piquero(Tipo1, Nivel1), piquero(Tipo2, Nivel2)):-
+    vidaUnidad(piquero(Tipo1, Nivel1), Vida1),
+    vidaUnidad(piquero(Tipo2, Nivel2), Vida2),
     Vida1 > Vida2.
-
+*/
 % 9)
 /*Saber si un jugador puede sobrevivir a un asedio. Esto ocurre si tiene más piqueros con escudo que sin escudo.
 En los ejemplos, Beto es el único que puede sobrevivir a un asedio, pues tiene 1 piquero con escudo y 0 sin escudo.*/
@@ -177,7 +191,8 @@ sobreviveAsedio(Jugador):-
 
 
 % 10) Árbol de tecnologías
- /* a) Se sabe que existe un árbol de tecnologías, que indica dependencias entre ellas. Hasta no desarrollar una, no se puede desarrollar la siguiente. Modelar el siguiente árbol de ejemplo: */
+ /* a) Se sabe que existe un árbol de tecnologías, que indica dependencias entre ellas. Hasta no desarrollar una, no se puede desarrollar la siguiente. 
+    Modelar el siguiente árbol de ejemplo: */
 %  requiere(tecnologia, dependencia)
 requiere(emplumado, herreria).
 requiere(punzon, emplumado).
@@ -205,8 +220,9 @@ dependenciaDirecta(Tecnologia, Subdependencia):-
     dependenciaDirecta(Dependencia, Subdependencia).
 
 
-/* b) Saber si un jugador puede desarrollar una tecnología, que se cumple cuando ya desarrolló todas sus dependencias (las directas y las indirectas). Considerar que pueden existir árboles de cualquier tamaño.
-En el ejemplo, beto puede desarrollar el molino (pues no tiene dependencias) pero no la herrería (porque ya la tiene), y ana puede desarrollar fundición (pues tiene forja y herrería). */
+/* b) Saber si un jugador puede desarrollar una tecnología, que se cumple cuando ya desarrolló todas sus dependencias (las directas y las indirectas). 
+Considerar que pueden existir árboles de cualquier tamaño. En el ejemplo, beto puede desarrollar el molino (pues no tiene dependencias) pero no la 
+herrería (porque ya la tiene), y ana puede desarrollar fundición (pues tiene forja y herrería). */
 
 puedeDesarrollar(Jugador, Tecnologia):-
     unJugador(Jugador),
@@ -217,8 +233,10 @@ puedeDesarrollar(Jugador, Tecnologia):-
 
 % Bonus
 % 11) a) 
-/*Encontrar un orden válido en el que puedan haberse desarrollado las tecnologías para que un jugador llegue a desarrollar todo lo que tiene. Se espera una relación de jugador con lista de tecnologías.
-Ejemplo: Un orden válido para Ana es: herreria, emplumado, forja, láminas. Otro orden válido sería herreria, forja, láminas, emplumado. Pero seguro que Ana no desarrolló primero la forja, porque antes necesitaría la herrería.
+/*Encontrar un orden válido en el que puedan haberse desarrollado las tecnologías para que un jugador llegue a desarrollar todo lo que tiene. Se espera una 
+relación de jugador con lista de tecnologías.
+Ejemplo: Un orden válido para Ana es: herreria, emplumado, forja, láminas. Otro orden válido sería herreria, forja, láminas, emplumado. 
+Pero seguro que Ana no desarrolló primero la forja, porque antes necesitaría la herrería.
 Recordar que debe funcionar para cualquier árbol y no sólo para el de el ejemplo. Y recordar que debe ser completamente inversible.*/
 
 %encuentra todas las tecnologias que un jugador desarrolló y las recopila en una lista.
@@ -275,6 +293,6 @@ unidadGanadora([UnidadDef | RestoDef], [UnidadAtq | RestoAtq]):-
 unidadGanadora([], []).
     
 ejercitoDefensor(JugadorDefensor, EjercitoDefensor):-
-    findall(UnidadDefensora, (unidad(JugadorDefensor, Unidades), member(UnidadDefensora, Unidades)), EjercitoDefensor).
+    findall(Unidad, unidad(JugadorDefensor, Unidad), EjercitoDefensor).
     
 
