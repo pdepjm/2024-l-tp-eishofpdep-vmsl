@@ -155,30 +155,30 @@ En caso de que no exista ventaja entre las unidades, se compara la vida (el de m
 Este punto no necesita ser inversible. Por ejemplo, un campeón con 95 de vida le gana a otro con 50, 
 pero un campeón con 100 de vida no le gana a un jinete a caballo.*/
 
+gana(jinete(_), campeon(_)).
+gana(campeon(_), piquero(_, _)).
+gana(piquero(_, _), jinete(_)).
+gana(jinete(camello), jinete(caballo)).
 
-leGana(jinete(_), campeon(_)).
-leGana(campeon(_), piquero(_, _)).
-leGana(piquero(_, _), jinete(_)).
-leGana(jinete(camello), jinete(caballo)).
+leGana(Ganador,Perdedor):-
+    gana(Ganador,Perdedor).
 
-gana(Ganador, Perdedor):-
-    leGana(Ganador, Perdedor).
-
-gana(Ganador, Perdedor):-
+leGana(Ganador, Perdedor):-
+    not(gana(Perdedor, Ganador)),
     vidaUnidad(Ganador, Vida1),
     vidaUnidad(Perdedor, Vida2),
-    not(leGana(Perdedor, Ganador)),
     Vida1 > Vida2.
-/*
+
 gana(piquero(Tipo1, Nivel1), piquero(Tipo2, Nivel2)):-
     vidaUnidad(piquero(Tipo1, Nivel1), Vida1),
     vidaUnidad(piquero(Tipo2, Nivel2), Vida2),
     Vida1 > Vida2.
-*/
+
 % 9)
 /*Saber si un jugador puede sobrevivir a un asedio. Esto ocurre si tiene más piqueros con escudo que sin escudo.
 En los ejemplos, Beto es el único que puede sobrevivir a un asedio, pues tiene 1 piquero con escudo y 0 sin escudo.*/
-cuenta_piqueros(Jugador, Tipo, Cantidad) :-
+
+/*cuenta_piqueros(Jugador, Tipo, Cantidad) :-
     unidad(Jugador, Unidades),
     findall(P, (member(P, Unidades), P = piquero(Tipo, _, _)), Lista),
     length(Lista, Cantidad).
@@ -187,11 +187,20 @@ sobreviveAsedio(Jugador):-
     unJugador(Jugador),
     cuenta_piqueros(Jugador, escudo, CantConEscudo),
     cuenta_piqueros(Jugador, sinEscudo, CantSinEscudo),
-    CantConEscudo > CantSinEscudo.
+    CantConEscudo > CantSinEscudo.*/
 
+contarPiqueros(Jugador,Escudo,SinEscudo):-
+    findall(Unidad, (unidad(Jugador,Unidad), Unidad = piquero(escudo,_)), ListaEscudo),
+    findall(Unidad, (unidad(Jugador,Unidad), Unidad = piquero(sinEscudo,_)), ListaSinEscudo),
+    length(ListaEscudo, Escudo),
+    length(ListaSinEscudo, SinEscudo).
+
+sobreviveAsedio(Jugador):-
+    contarPiqueros(Jugador, Escudo, SinEscudo),
+    Escudo > SinEscudo.
 
 % 10) Árbol de tecnologías
- /* a) Se sabe que existe un árbol de tecnologías, que indica dependencias entre ellas. Hasta no desarrollar una, no se puede desarrollar la siguiente. 
+/* a) Se sabe que existe un árbol de tecnologías, que indica dependencias entre ellas. Hasta no desarrollar una, no se puede desarrollar la siguiente. 
     Modelar el siguiente árbol de ejemplo: */
 %  requiere(tecnologia, dependencia)
 requiere(emplumado, herreria).
